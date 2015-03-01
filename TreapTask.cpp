@@ -1,261 +1,53 @@
+#include "Treap.h"
 #include <cstdio>
-#include <cstdlib>
-#include <utility>
-#include <algorithm>
+#include <iostream>
+#include <string>
 
-class Treap
+using std::cin;
+using std::cout;
+using std::string;
+using std::endl;
+
+int main()
 {
-private:
-    struct Node
+    NTreap::Treap T;
+    string query;
+    cin >> query;
+    while (query != "exit")
     {
-        int value;
-        
-        size_t priority;
-        size_t size;
-        long long sum;
-        size_t longestNonDecreasingPrefix;
-        size_t longestNonIncreasingSuffix;
-        bool reverseNeeded;
-
-
-        Node *left, *right;
-        
-        Node(int value) : 
-                            value(value),
-                            priority(rand()),
-                            size(1U),
-                            sum(value),
-                            longestNonDecreasingPrefix(1U),
-                            longestNonIncreasingSuffix(1U),
-                            reverseNeeded(false),
-                            left(nullptr),
-                            right(nullptr)
-        {    
-        }
-    };
-
-    Node *root;
-
-    size_t sizeOf(Node *node)
-    {
-        return (node ? node->size : 0U);
-    }
-
-    long long sumOf(Node *node)
-    {
-        return (node ? node->sum : 0U);
-    }
-
-    Node * leftChildOf(Node *node)
-    {
-        return node->left;
-    }
-
-    Node * rightChildOf(Node *node)
-    {
-        return node->right;
-    }
-
-    void recalcLongestEnd(Node *node, size_t & (*lengthAccess) (Node *), Node * (*lessGetter) (Node *), Node * (*largerGetter) (Node *))
-    {
-        lengthAccess(node) = 0U;
-        bool longestEndStoppesInLessChild = false;
-        
-        if (lessGetter(node))
+        if (query == "insert")
         {
-            lengthAccess(node) += lengthAccess(lessGetter(node));
-            longestEndStoppesInLessChild = !(lessGetter(node)->value <= node->value);
+            int value;
+            size_t index;
+            cin >> value >> index;
+            cout << value << index << endl;
+            T.insert(value, index);
+            T.print();
         }
-
-        if (!longestEndStoppesInLessChild)
+        else if (query == "sum")
         {
-            lengthAccess(node) += 1U;
-            if (largerGetter(node) && node->value <= largerGetter(node)->value)
-            {
-                lengthAccess(node) += lengthAccess(largerGetter(node));
-            }
+            size_t i, j;
+            cin >> i >> j;
+            cout << T.sum(i, j) << endl;
+            T.print();
         }
-    }
-
-    void recalc(Node *node)
-    {
-        if (node)
+        else if (query == "change")
         {
-            node->size = sizeOf(node->left) + sizeOf(node->right) + 1U;
-            node->sum = sumOf(node->left) + sumOf(node->right) + node->value;
-            recalcLongestEnd(node, 
-                            [] (Node *) -> size_t
-                            {
-                                return node->longestNonDecreasingPrefix;
-                            },
-                            leftChildOf,
-                            rightChildOf
-            );
-            recalcLongestEnd(node, 
-                            [] (Node *) -> size_t
-                            {
-                                return node->longestNonIncreasingSuffix;
-                            },
-                            rightChildOf,
-                            leftChildOf
-            );
+            size_t i;
+            int newValue;
+            cin >> i >> newValue;
+            T.change(i, newValue);
+            T.print();
         }
-    }
-
-    void changeReverseNeededStatus(Node *node, Node * (*childOf) (Node *))
-    {
-        if (node)
+        else if (query == "next_permutation")
         {
-            node->reverseNeeded ^= true;
-        }
-    }
-
-    void push(Node *node)
-    {
-        if (node && node->reverseNeeded)
-        {
-            node->reverseNeeded = false;
+            size_t i, j;
+            cin >> i >> j;
+            T.next_permutation(i, j);
+            T.print();
             
-            std::swap(node->longestNonIncreasingSuffix, node->longestNonDecreasingPrefix);
-            std::swap(node->left, node->right);
-
-            changeReverseNeededStatus(node->left);
-            changeReverseNeededStatus(node->right);
         }
+        cin >> query;
     }
-
-    //i values goes to left
-    std::pair<Node *, Node *> split(Node *node, size_t i)
-    {
-        if (!node)
-        {
-            return std::pair<Node *, Node *>(nullptr, nullptr);
-        }
-
-        push(node);
-
-        if (sizeOf(node->left) >= i)
-        {
-            std::pair<Node *, Node *> temp = split(node->left, i);
-            node->left = temp.second;
-            recalc(node);
-            return std::pair<Node *, Node *>(temp.first, node);
-        }
-        std::pair<Node *, Node *> temp = split(node->right, i - sizeOf(node->left) - 1U);
-        node->right = temp.first;
-        recalc(node);
-        return std::pair<Node *, Node *>(node, temp.second);
-    }
-
-
-    //call only if node-referenced array is decreasingly sorted 
-    std::pair<Node *, Node *> splitByElement(Node *node, int element)
-    {
-         if (!node)
-        {
-            return std::pair<Node *, Node *>(nullptr, nullptr);
-        }
-
-        push(node);
-
-        if (node->value <= element)
-        {
-            std::pair<Node *, Node *> temp = split(node->left, i);
-            node->left = temp.second;
-            recalc(node);
-            return std::pair<Node *, Node *>(temp.first, node);
-        }
-        std::pair<Node *, Node *> temp = split(node->right, i - sizeOf(node->left) - 1U);
-        node->right = temp.first;
-        recalc(node);
-        return std::pair<Node *, Node *>(node, temp.second);
-    }
-
-    Node * merge(Node *left, Node *right)
-    {
-        if (!left || !right)
-        {
-            return (left ? left : right);
-        }
-        
-        push(left);
-        push(right);
-
-        if (left->priority > right->priority)
-        {
-            left->right = merge(left->right, right);
-            recalc(left);
-            return left;
-        }
-        right->left = merge(left, right->left);
-        recalc(right);
-        return right;
-    }
-
-    void reverse(size_t i, size_t j)
-    {
-        auto T1 = split(root, i);
-        auto T2 = split(T1.second, j - i + 1);
-        changeReverseNeededStatus(T2.first);
-        root = merge(T1.first, merge(T2.first, T2.second));
-    }
-
-public:
-    long long sum(size_t i, size_t j)
-    {
-        auto T1 = split(root, i);
-        auto T2 = split(T1.second, j - i + 1);
-        long long returnValue = T2.first->sum;
-        root = merge(T1.first, merge(T2.first, T2.second));
-        return returnValue;
-    }
-
-    void insert(int value, size_t i)
-    {
-        auto T = split(root, i);
-        root = merge(T.first, merge(new Node(value), T.second));
-    }
-
-    void change(size_t i, int newValue)
-    {
-        auto T1 = split(root, i);
-        auto T2 = split(T1.second, 1U);
-        T2.first->value = newValue;
-        root = merge(T1.first, merge(T2.first, T2.second));
-    }
-
-    bool next_permutation(size_t i, size_t j)
-    {
-        /*
-            |                                             root                                                                   |
-            |T1.first|                                   T1.second (T2)                                                          |
-            |        |                                  segment (parts)                                                |T2.second|
-            |        |                  prefixParts         |             decreasingPart(suffixParts)                  |         |
-            |        |                 | elementToSwap      |             middleParts           |                      |         |     
-            |T1.first|prefixParts.first| elementToSwap      |middleParts.first|elementToSwapWith|  suffixParts.second  |T2.second| - result of split
-
-       */
-        auto T1 = split(root, i);
-        auto T2 = split(T1.second, j - i + 1);
-        Node *segment = T2.first;
-        if (segment->longestNonIncreasingSuffix == segment->size)
-        {
-            reverse(segment);
-            root = merge(T1.first, merge(segment, T2.second));
-            return false;
-        }
-        auto parts = split(segment, segment->size - segment->longestNonIncreasingSuffix);
-        Node *decreasingPart = parts.second;
-        auto prefixParts = split(parts.first, parts.first->size - 1U);
-        Node *elementToSwap = prefixParts.second;
-        auto suffixParts = splitByElement(decreasingPart, elementToSwap->value);
-        auto middleParts = split(suffixParts.first, suffixParts.first->size - 1U);
-        Node *elementToSwapWith = middleParts.second;
-        Node *newSuffix = merge(middleParts.first, merge(elementToSwap, suffixParts.second));
-        reverse(newSuffix);
-
-        segment = merge(prefixParts.first, merge(elementToSwapWith, newSuffix));
-        root = merge(T1.first, merge(segment, T2.second));
-        return true;
-    }
-};
+    return 0;
+}
