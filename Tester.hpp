@@ -25,7 +25,7 @@ class Tester
 public:
     Tester(size_t queryNumber, int minimalNumber, int maximalNumber);
     
-    std::vector <int> operator()(IPermutator *testSubject);
+    std::vector <long long> operator()(IPermutator *testSubject);
     
     void srand(unsigned int seed);
 };

@@ -16,9 +16,9 @@ void Tester::srand(unsigned int seed)
 }
 
 
-std::vector <int> Tester::operator()(IPermutator *testSubject)
+std::vector <long long> Tester::operator()(IPermutator *testSubject)
 {
-    std::vector<int> result;
+    std::vector<long long> result;
     size_t currentSize = 0;
     for (size_t i = 0; i < queryNumber; ++i)
     {
