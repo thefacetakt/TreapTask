@@ -1,4 +1,4 @@
-#include "Treap.h"
+#include "Treap.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -16,8 +16,8 @@ namespace NTreap
 //private methods    
     Treap::Node::Node(int value) : 
         value(value),
-        minimum(value),
-        maximum(value),
+        leftest(value),
+        rightest(value),
         priority(rand()),
         size(1U),
         sum(value),
@@ -39,14 +39,24 @@ namespace NTreap
         return (node ? node->sum : 0U);
     }
     
-    int Treap::minOf(Node *node)
+//     int Treap::minOf(Node *node)
+//     {
+//         return (node ? node->minimum : INT_MAX);
+//     }
+//     
+//     int Treap::maxOf(Node *node)
+//     {
+//         return (node ? node->maximum : INT_MIN);
+//     }
+    
+    int Treap::leftestOrMinimal(Node * node)
     {
-        return (node ? node->minimum : INT_MAX);
+        return (node ? node->leftest : INT_MIN);
     }
     
-    int Treap::maxOf(Node *node)
+    int Treap::rightestOrMinimal(Node * node)
     {
-        return (node ? node->maximum : INT_MIN);
+        return (node ? node->rightest : INT_MIN);
     }
     
     Treap::Node * Treap::leftChildOf(Node *node)
@@ -59,7 +69,9 @@ namespace NTreap
         return node->right;
     }
     
-    void Treap::recalcLongestEnd(Node *node, size_t & (*lengthAccess) (Node *), Node * (*lessGetter) (Node *), Node * (*largerGetter) (Node *))
+    void Treap::recalcLongestEnd(Node *node, size_t & (*lengthAccess) (Node *), Node * (*lessGetter) (Node *), Node * (*largerGetter) (Node *),
+                                                                                int (*leastGetter) (Node *), int (*largestGetter) (Node *)
+    )
     {
         
 //                  .
@@ -72,12 +84,12 @@ namespace NTreap
         
         lengthAccess(node) += lengthAccess(lessGetter(node));
         longestEndStoppesInLessChild = sizeOf(lessGetter(node)) != lengthAccess(lessGetter(node)) ||
-                                    (maxOf(lessGetter(node)) > node->value);
-
+//                                     (maxOf(lessGetter(node)) > node->value);
+                                      (largestGetter(lessGetter(node)) > node->value);
         if (!longestEndStoppesInLessChild)
         {
             lengthAccess(node) += 1U;
-            if (node->value <= minOf(largerGetter(node)))
+            if (node->value <= leastGetter(largerGetter(node)))
             {
                 lengthAccess(node) += lengthAccess(largerGetter(node));
             }
@@ -91,8 +103,9 @@ namespace NTreap
             node->size = sizeOf(node->left) + sizeOf(node->right) + 1U;
             
             node->sum = sumOf(node->left) + sumOf(node->right) + node->value;
-            node->maximum = std::max(node->value, std::max(maxOf(node->left), maxOf(node->right)));
-            node->minimum = std::min(node->value, std::min(minOf(node->left), minOf(node->right)));
+            
+            node->leftest = (node->left ? node->left->leftest : node->value);
+            node->rightest = (node->right ? node->right->rightest : node->value);
             
             recalcLongestEnd(node, 
                             [] (Node * node) -> size_t &
@@ -100,7 +113,9 @@ namespace NTreap
                                 return (node ? node->longestNonDecreasingPrefix : zero);
                             },
                             Treap::leftChildOf,
-                            Treap::rightChildOf
+                            Treap::rightChildOf,
+                            Treap::rightestOrMinimal,
+                            Treap::leftestOrMinimal
             );
             recalcLongestEnd(node, 
                             [] (Node * node) -> size_t &
@@ -108,7 +123,9 @@ namespace NTreap
                                 return (node ? node->longestNonIncreasingSuffix : zero);
                             },
                             Treap::rightChildOf,
-                            Treap::leftChildOf
+                            Treap::leftChildOf,
+                            Treap::leftestOrMinimal,
+                            Treap::rightestOrMinimal
             );
         }
     }
@@ -235,10 +252,10 @@ namespace NTreap
     {
     }
 
-    long long Treap::sum(size_t i, size_t j)
+    long long Treap::subsegmentSum(size_t i, size_t j)
     {
         auto T1 = split(root, i);
-        auto T2 = split(T1.second, j - i + 1);
+        auto T2 = split(T1.second, j - i);
         long long returnValue = T2.first->sum;
         root = merge(T1.first, merge(T2.first, T2.second));
         return returnValue;
@@ -250,7 +267,7 @@ namespace NTreap
         root = merge(T.first, merge(new Node(value), T.second));
     }
 
-    void Treap::change(size_t i, int newValue)
+    void Treap::assign(int newValue, size_t i)
     {
         auto T1 = split(root, i);
         auto T2 = split(T1.second, 1U);
@@ -258,7 +275,7 @@ namespace NTreap
         root = merge(T1.first, merge(T2.first, T2.second));
     }
 
-    bool Treap::next_permutation(size_t i, size_t j)
+    bool Treap::nextPermutation(size_t i, size_t j)
     {
         /*
             |                                             root                                                                   |
@@ -270,7 +287,7 @@ namespace NTreap
 
         */
         auto T1 = split(root, i);
-        auto T2 = split(T1.second, j - i + 1);
+        auto T2 = split(T1.second, j - i);
         Node *segment = T2.first;
         if (segment->longestNonIncreasingSuffix == segment->size)
         {
@@ -279,7 +296,7 @@ namespace NTreap
             return false;
         }
         auto parts = split(segment, segment->size - segment->longestNonIncreasingSuffix);
-        Node *decreasingPart = parts.second;
+        Node *decreasingPart = parts.second;    
         auto prefixParts = split(parts.first, parts.first->size - 1U);
         Node *elementToSwap = prefixParts.second;
         auto suffixParts = splitByElement(decreasingPart, elementToSwap->value);
