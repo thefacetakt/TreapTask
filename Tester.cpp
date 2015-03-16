@@ -1,5 +1,6 @@
 #include "Tester.hpp"
 #include <cstdlib>
+#include <cstdio>
 
 int Tester::rand()
 {
@@ -26,7 +27,6 @@ std::vector <long long> Tester::operator()(IPermutator *testSubject)
         size_t position;
         size_t left;
         size_t right;
-        
         switch((currentSize ? rand() % 4 + 1 : 1))
         {
             case 1:

@@ -75,6 +75,7 @@ namespace NTreap
         
 #ifdef _DEBUG
         void _print(Node *node, bool reverseNeeded, int h) const;
+        int longestSuffix(Node *node, bool reverseNeeded) const;
 #endif
 
     public:

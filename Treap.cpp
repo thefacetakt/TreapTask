@@ -39,16 +39,6 @@ namespace NTreap
         return (node ? node->sum : 0U);
     }
     
-//     int Treap::minOf(Node *node)
-//     {
-//         return (node ? node->minimum : INT_MAX);
-//     }
-//     
-//     int Treap::maxOf(Node *node)
-//     {
-//         return (node ? node->maximum : INT_MIN);
-//     }
-    
     int Treap::leftestOrMinimal(Node * node)
     {
         return (node ? node->leftest : INT_MIN);
@@ -84,7 +74,6 @@ namespace NTreap
         
         lengthAccess(node) += lengthAccess(lessGetter(node));
         longestEndStoppesInLessChild = sizeOf(lessGetter(node)) != lengthAccess(lessGetter(node)) ||
-//                                     (maxOf(lessGetter(node)) > node->value);
                                       (largestGetter(lessGetter(node)) > node->value);
         if (!longestEndStoppesInLessChild)
         {
@@ -100,6 +89,8 @@ namespace NTreap
     {
         if (node)
         {
+            push(node->left);
+            push(node->right);
             node->size = sizeOf(node->left) + sizeOf(node->right) + 1U;
             
             node->sum = sumOf(node->left) + sumOf(node->right) + node->value;
@@ -114,8 +105,8 @@ namespace NTreap
                             },
                             Treap::leftChildOf,
                             Treap::rightChildOf,
-                            Treap::rightestOrMinimal,
-                            Treap::leftestOrMinimal
+                            Treap::leftestOrMinimal,
+                            Treap::rightestOrMinimal
             );
             recalcLongestEnd(node, 
                             [] (Node * node) -> size_t &
@@ -124,8 +115,8 @@ namespace NTreap
                             },
                             Treap::rightChildOf,
                             Treap::leftChildOf,
-                            Treap::leftestOrMinimal,
-                            Treap::rightestOrMinimal
+                            Treap::rightestOrMinimal,
+                            Treap::leftestOrMinimal
             );
         }
     }
@@ -146,6 +137,7 @@ namespace NTreap
             
             std::swap(node->longestNonIncreasingSuffix, node->longestNonDecreasingPrefix);
             std::swap(node->left, node->right);
+            std::swap(node->leftest, node->rightest);
 
             changeReverseNeededStatus(node->left);
             changeReverseNeededStatus(node->right);
@@ -201,13 +193,14 @@ namespace NTreap
     
     Treap::Node * Treap::merge(Node *left, Node *right)
     {
+        push(left);
+        push(right);
+        
         if (!left || !right)
         {
             return (left ? left : right);
         }
         
-        push(left);
-        push(right);
 
         if (left->priority > right->priority)
         {
@@ -238,7 +231,11 @@ namespace NTreap
                 _print(node->right, reverseNeeded, h + 1);
             else
                 _print(node->left, reverseNeeded, h + 1);
-            printf("%d ", node->value);
+            for (int i = 0; i < h; ++i)
+                printf("-");
+            printf("  %d, %d\n", node->value, (reverseNeeded ? node->longestNonDecreasingPrefix : node->longestNonIncreasingSuffix));
+            
+            fflush(stdout);
             if (reverseNeeded)
                 _print(node->left, reverseNeeded, h + 1);
             else
@@ -284,8 +281,11 @@ namespace NTreap
             |        |                  prefixParts         |             decreasingPart(suffixParts)                  |         |
             |        |                 | elementToSwap      |             middleParts           |                      |         |     
             |T1.first|prefixParts.first| elementToSwap      |middleParts.first|elementToSwapWith|  suffixParts.second  |T2.second| - result of split
-
+            
         */
+#ifdef _DEBUG
+        print();
+#endif
         auto T1 = split(root, i);
         auto T2 = split(T1.second, j - i);
         Node *segment = T2.first;
@@ -313,6 +313,7 @@ namespace NTreap
 #ifdef _DEBUG
     void Treap::print() const
     {
+        printf("\n");
         _print(root, 0, 1);
         printf("\n");
     }
