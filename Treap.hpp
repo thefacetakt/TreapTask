@@ -36,6 +36,8 @@ namespace NTreap
             Node *left, *right;
             
             Node(int value);
+            
+            ~Node();
         };
 
         Node *root;
@@ -93,6 +95,7 @@ namespace NTreap
 #ifdef _DEBUG
         void print() const;
 #endif
+        ~Treap();
     };
     
 };

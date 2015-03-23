@@ -48,5 +48,6 @@ std::vector <long long> Tester::operator()(IPermutator *testSubject)
                 result.push_back(testSubject->nextPermutation(left, right));
         };
     }
+    delete testSubject;
     return result;
 }

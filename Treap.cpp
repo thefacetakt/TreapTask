@@ -29,6 +29,12 @@ namespace NTreap
     {    
     }
     
+    Treap::Node::~Node()
+    {
+        delete left;
+        delete right;
+    }
+    
     size_t Treap::sizeOf(Node *node)
     {
         return (node ? node->size : 0U);
@@ -318,4 +324,9 @@ namespace NTreap
         printf("\n");
     }
 #endif  
+
+    Treap::~Treap()
+    {
+        delete root;
+    }
 };

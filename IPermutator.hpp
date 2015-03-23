@@ -10,6 +10,7 @@ public:
     virtual void assign(int value, size_t index) = 0;
     virtual long long subsegmentSum(size_t left, size_t right) = 0;
     virtual bool nextPermutation(size_t left, size_t right) = 0;
+    virtual ~IPermutator(){}
 };
 
 #endif
