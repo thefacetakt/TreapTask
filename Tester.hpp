@@ -37,17 +37,13 @@ class Tester
     size_t queryNumber;
     int minimalNumber;
     int maximalNumber;
-    unsigned int seed;
     
-    int rand();
 public:
     Tester(size_t queryNumber, int minimalNumber, int maximalNumber);
     
     void generateQueries(int seed);
     
     std::vector <long long> operator()(IPermutator *testSubject);
-    
-    void srand(unsigned int seed);
 };
 
 #endif

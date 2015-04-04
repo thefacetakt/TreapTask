@@ -2,21 +2,10 @@
 #include <cstdlib>
 #include <cstdio>
 
-int Tester::rand()
-{
-    return seed = (1723 * seed + 817623);
-}
-
 Tester::Tester(size_t queryNumber, int minimalNumber, int maximalNumber) : queryNumber(queryNumber), minimalNumber(minimalNumber), maximalNumber(maximalNumber)
 {
     distributionOfNumber = std::uniform_int_distribution<int>(minimalNumber, maximalNumber);
     distributionOfQueryType = std::uniform_int_distribution<int>(0, QUERIES_NUMBER - 1);
-}
-
-void Tester::srand(unsigned int seed)
-{
-    this->seed = seed;
-    
 }
 
 void Tester::generateQueries(int seed)
