@@ -26,3 +26,12 @@ bool Stupid::nextPermutation(size_t left, size_t right)
 {
     return std::next_permutation(elements.begin() + left, elements.begin() + right);
 }
+
+#ifdef _DEBUG
+void Stupid::print() const
+{
+    for (auto const &element: elements)
+        printf("%d ", element);
+    printf("\n");
+}
+#endif

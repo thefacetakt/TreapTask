@@ -167,10 +167,13 @@ namespace NTreap
             recalc(node);
             return std::pair<Node *, Node *>(temp.first, node);
         }
-        std::pair<Node *, Node *> temp = split(node->right, i - sizeOf(node->left) - 1U);
-        node->right = temp.first;
-        recalc(node);
-        return std::pair<Node *, Node *>(node, temp.second);
+        else
+        {
+            std::pair<Node *, Node *> temp = split(node->right, i - sizeOf(node->left) - 1U);
+            node->right = temp.first;
+            recalc(node);
+            return std::pair<Node *, Node *>(node, temp.second);
+        }
     }
     
     //Is called only if node-referenced array is decreasingly sorted 
@@ -191,10 +194,13 @@ namespace NTreap
             recalc(node);
             return std::pair<Node *, Node *>(temp.first, node);
         }
-        std::pair<Node *, Node *> temp = splitByElement(node->right, element);
-        node->right = temp.first;
-        recalc(node);
-        return std::pair<Node *, Node *>(node, temp.second);
+        else
+        {
+            std::pair<Node *, Node *> temp = splitByElement(node->right, element);
+            node->right = temp.first;
+            recalc(node);
+            return std::pair<Node *, Node *>(node, temp.second);
+        }
     }
     
     Treap::Node * Treap::merge(Node *left, Node *right)
@@ -214,9 +220,12 @@ namespace NTreap
             recalc(left);
             return left;
         }
-        right->left = merge(left, right->left);
-        recalc(right);
-        return right;
+        else
+        {
+            right->left = merge(left, right->left);
+            recalc(right);
+            return right;
+        }
     }
     
     void Treap::reverse(size_t i, size_t j)
@@ -224,6 +233,7 @@ namespace NTreap
         auto T1 = split(root, i);
         auto T2 = split(T1.second, j - i + 1);
         changeReverseNeededStatus(T2.first);
+        recalc(T2.first);
         root = merge(T1.first, merge(T2.first, T2.second));
     }
     
@@ -237,9 +247,7 @@ namespace NTreap
                 _print(node->right, reverseNeeded, h + 1);
             else
                 _print(node->left, reverseNeeded, h + 1);
-            for (int i = 0; i < h; ++i)
-                printf("-");
-            printf("  %d, %d\n", node->value, (reverseNeeded ? node->longestNonDecreasingPrefix : node->longestNonIncreasingSuffix));
+            printf("%d ", node->value);
             
             fflush(stdout);
             if (reverseNeeded)
@@ -275,6 +283,7 @@ namespace NTreap
         auto T1 = split(root, i);
         auto T2 = split(T1.second, 1U);
         T2.first->value = newValue;
+        recalc(T2.first);
         root = merge(T1.first, merge(T2.first, T2.second));
     }
 
@@ -289,9 +298,7 @@ namespace NTreap
             |T1.first|prefixParts.first| elementToSwap      |middleParts.first|elementToSwapWith|  suffixParts.second  |T2.second| - result of split
             
         */
-#ifdef _DEBUG
-        print();
-#endif
+
         auto T1 = split(root, i);
         auto T2 = split(T1.second, j - i);
         Node *segment = T2.first;

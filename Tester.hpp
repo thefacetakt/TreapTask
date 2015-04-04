@@ -4,6 +4,7 @@
 #include "IPermutator.hpp"
 
 #include <vector>
+#include <random>
 
 class Tester
 {
@@ -13,8 +14,25 @@ class Tester
         ASSIGN,
         SUBSEGMENT_SUM,
         NEXT_PERMUTATION,
-        QUIT
+        QUERIES_NUMBER
     };
+    
+    std::default_random_engine generator;
+    std::uniform_int_distribution<int> distributionOfNumber;
+    std::uniform_int_distribution<int> distributionOfQueryType;
+    
+    struct Query
+    {
+        EQuery type;
+        long long firstParameter;
+        long long secondParameter;
+        Query(EQuery type, long long firstParameter, long long secondParameter) : 
+            type(type), firstParameter(firstParameter), secondParameter(secondParameter)
+        {
+        }
+    };
+    
+    std::vector <Query> queries;
     
     size_t queryNumber;
     int minimalNumber;
@@ -24,6 +42,8 @@ class Tester
     int rand();
 public:
     Tester(size_t queryNumber, int minimalNumber, int maximalNumber);
+    
+    void generateQueries(int seed);
     
     std::vector <long long> operator()(IPermutator *testSubject);
     

@@ -5,15 +5,18 @@
 #include <vector>
 #include <cstdio>
 
+
+//arguments: number of queries, minimal number, maximal number, test number (used as seed)
+
 int main(int argc, char **argv)
 {
     
-    Tester Test(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
-    Test.srand(atoi(argv[4]));
-    std::vector <long long> treapResult = Test(new NTreap::Treap());
+    Tester test(atoi(argv[1]), atoi(argv[2]), atoi(argv[3]));
+    test.generateQueries(atoi(argv[4]));
+    std::vector <long long> treapResult = test(new NTreap::Treap());
+    
 #ifdef _COMPARE_
-    Test.srand(atoi(argv[4]));
-    std::vector <long long> stupidResult = Test(new Stupid());
+    std::vector <long long> stupidResult = test(new Stupid());
     if (treapResult != stupidResult)
     {
         printf("FAILED TEST %d\n", atoi(argv[4]));

@@ -16,6 +16,10 @@ public:
     void assign(int value, size_t index);
     long long subsegmentSum(size_t left, size_t right);
     bool nextPermutation(size_t left, size_t right);
+    
+#ifdef _DEBUG
+    void print() const;
+#endif
 };
 
 #endif
